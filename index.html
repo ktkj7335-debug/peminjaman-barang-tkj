@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Peminjaman Barang TKJ - v3.5</title>
+<link rel="icon" href="data:;base64,iVBORw0KGgo=">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;
+  background:#000; color:#e8f4ff; overflow:hidden;
+}
+
+/* ========== AURORA BACKGROUND ========== */
+@keyframes auroraFlow {
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:0% 50%}
+}
+.aurora{
+  position:absolute;inset:0;
+  background:radial-gradient(circle at 20% 30%,rgba(124,58,237,0.15) 0%,transparent 40%),
+             radial-gradient(circle at 80% 70%,rgba(6,182,212,0.15) 0%,transparent 40%),
+             linear-gradient(180deg,rgba(20,10,45,0.9),rgba(2,6,23,0.9));
+  background-size:200% 200%;
+  mix-blend-mode:screen;
+  animation:auroraFlow 15s ease-in-out infinite;
+  filter:blur(40px);
+}
+.laser{
+  position:absolute;inset:0;
+  background:linear-gradient(90deg,
+    rgba(124,58,237,0.1) 0%,
+    rgba(6,182,212,0.2) 50%,
+    rgba(124,58,237,0.1) 100%);
+  background-size:200% 200%;
+  animation:auroraFlow 8s linear infinite;
+  mix-blend-mode:screen;
+  opacity:0.8;
+  filter:blur(8px);
+}
+.starfield { position:absolute; inset:0; overflow:hidden; pointer-events:none; }
+.star{
+  position:absolute; top:-10vh; width:2px; height:70px; opacity:0.0;
+  background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(255,255,255,0));
+  transform: translateY(-100vh) rotate(10deg);
+  filter:blur(.6px);
+  animation: fall linear forwards;
+}
+@keyframes fall { to { transform: translateY(120vh) rotate(10deg); opacity:1; } }
+
+/* ========== INTRO ========== */
+.stage{
+  position:fixed;inset:0;display:grid;place-items:center;background:#000;z-index:40;
+}
+.dvd-wrap{position:relative;width:360px;height:220px;display:grid;place-items:center;z-index:50}
+.dvd-box{
+  width:140px;height:68px;border-radius:12px;background:linear-gradient(90deg,#7c3aed,#06b6d4);
+  display:grid;place-items:center;font-weight:900;color:#041018;font-size:28px;
+  box-shadow:0 18px 60px rgba(124,58,237,0.18), inset 0 -8px 22px rgba(0,0,0,0.12);
+  transform:translate(0,0);
+  position:absolute; left:20px; top:20px;
+}
+.dvd-logo-desc{position:relative;z-index:51;margin-top:260px;text-align:center;color:#bfe9ff;opacity:.95}
+.intro-menu{position:relative;z-index:51;margin-top:12px;display:flex;gap:14px;justify-content:center}
+.btn{
+  background:transparent;border:1px solid rgba(190,233,255,0.14);padding:10px 14px;border-radius:10px;color:#bfe9ff;cursor:pointer;font-weight:800;
+  backdrop-filter: blur(4px);transition:transform .12s, box-shadow .12s;
+}
+.btn.primary{background:linear-gradient(90deg,#7c3aed,#06b6d4);color:#041018;border:none;box-shadow:0 10px 30px rgba(6,182,212,0.08)}
+.btn:active{transform:translateY(1px)}
+.small{font-size:13px;opacity:.8;color:#aee8ff80}
+
+/* ========== APP ========== */
+.app{
+  position:relative;
+  max-width:1100px;margin:28px auto;padding:28px;
+  border-radius:16px;background:rgba(0,0,0,0.7);
+  box-shadow: 0 10px 40px rgba(2,6,23,0.75);
+  border:1px solid rgba(255,255,255,0.03);
+  display:none;overflow:hidden;
+}
+.app .aurora, .app .laser {pointer-events:none;z-index:0;}
+.app-content{position:relative;z-index:5;}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.logo-app{display:flex;gap:12px;align-items:center}
+.logo-mini{width:56px;height:56px;border-radius:12px;background:linear-gradient(90deg,#7c3aed,#06b6d4);display:grid;place-items:center;font-weight:900;color:#041018}
+h1{font-size:20px}
+p.lead{opacity:.75}
+.grid{display:grid;grid-template-columns:420px 1fr;gap:20px}
+.card{background:rgba(255,255,255,0.02);padding:18px;border-radius:14px;border:1px solid rgba(255,255,255,0.03)}
+label{display:block;font-size:13px;color:#cfe8ff;margin-bottom:6px}
+input[type="text"], input[type="date"], select{width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
+input[type="file"]{color:inherit}
+button.primary{background:linear-gradient(90deg,#7c3aed,#06b6d4);border:none;color:#041018;padding:10px 14px;border-radius:10px;font-weight:700;cursor:pointer}
+button.ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:inherit;padding:8px 12px;border-radius:10px;cursor:pointer}
+table{width:100%;border-collapse:collapse;margin-top:12px;color:#d9f2ff}
+th,td{padding:8px;text-align:left;border-bottom:1px dashed rgba(255,255,255,0.03);font-size:13px}
+th{opacity:.85}
+.thumb{width:64px;height:40px;object-fit:cover;border-radius:6px;border:1px solid rgba(255,255,255,0.06)}
+.pill{display:inline-block;padding:6px 10px;border-radius:999px;font-weight:700;font-size:12px}
+.pill.borrowed{background:linear-gradient(90deg,#ffb86b,#ff7a7a);color:#081014}
+.pill.returned{background:linear-gradient(90deg,#7efc9f,#60a5fa);color:#041018}
+tr.clickable{cursor:pointer}
+tr.clickable:hover{background:rgba(124,58,237,0.06)}
+footer{margin-top:18px;text-align:center;opacity:.6;font-size:13px}
+.notif{position:fixed;right:20px;bottom:20px;background:linear-gradient(90deg,#7c3aed,#06b6d4);color:#041018;padding:10px 14px;border-radius:10px;font-weight:800;box-shadow:0 12px 40px rgba(124,58,237,0.12);display:none;z-index:90}
+.modal{display:none;position:fixed;inset:0;background:rgba(2,6,23,0.7);align-items:center;justify-content:center;z-index:100}
+.modal-box{width:640px;max-width:95%;background:#071021;padding:18px;border-radius:12px;border:1px solid rgba(255,255,255,0.03)}
+@media (max-width:900px){.grid{grid-template-columns:1fr}.dvd-wrap{transform:scale(.9)}}
+</style>
+</head>
+<body>
+<!-- INTRO -->
+<div class="stage" id="stage">
+  <div class="aurora"></div>
+  <div class="laser"></div>
+  <div class="starfield" id="starfield"></div>
+  <div class="dvd-wrap" id="dvdWrap">
+    <div class="dvd-box" id="dvdBox">TKJ</div>
+    <div class="dvd-logo-desc">
+      <div style="font-weight:900;font-size:18px;color:#e8fbff">Peminjaman Barang TKJ</div>
+      <div class="intro-menu">
+        <button class="btn" id="previewBtn">Preview</button>
+        <button class="btn primary" id="loginBtn">Login</button>
+      </div>
+      <div class="small" style="margin-top:10px;">Preview = lihat daftar (read-only). Login = akses penuh.</div>
+    </div>
+  </div>
+</div>
+
+<!-- APLIKASI -->
+<div class="app" id="app">
+  <div class="aurora"></div>
+  <div class="laser"></div>
+  <div class="app-content">
+    <div class="topbar">
+      <div class="logo-app">
+        <div class="logo-mini">TKJ</div>
+        <div><h1>Peminjaman Barang TKJ</h1><p class="lead">Admin Panel — aman & modern</p></div>
+      </div>
+      <div><button class="ghost" id="exportCSV">Export CSV</button><button class="ghost" id="logoutBtn">Logout</button></div>
+    </div>
+    <div class="grid">
+      <div class="card">
+        <h3>Form Pinjam Barang</h3>
+        <form id="borrowForm">
+          <label>Nama</label><input id="name" type="text" required>
+          <label>Kelas</label><input id="kelas" type="text" required>
+          <label>Nama Barang</label><input id="item" type="text" required>
+          <label>Tanggal Peminjaman</label><input id="date" type="date">
+          <button id="nowBtn" type="button" class="ghost" style="margin-top:6px">Isi Hari Ini</button>
+          <label style="margin-top:8px">Foto (WAJIB)</label><input id="photo" type="file" accept="image/*">
+          <div style="margin-top:8px;display:flex;gap:8px;">
+            <button id="saveBorrow" class="primary" type="button">Simpan</button>
+            <button id="clearAll" class="ghost" type="button">Bersihkan</button>
+          </div>
+        </form>
+      </div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;">
+          <h3>Daftar Transaksi</h3>
+          <button id="togglePreview" class="ghost">Switch Mode</button>
+        </div>
+        <table id="table"><thead><tr><th>#</th><th>Nama</th><th>Kelas</th><th>Barang</th><th>Tanggal</th><th>Foto</th><th>Status</th></tr></thead><tbody></tbody></table>
+        <footer>Dibuat untuk keperluan praktikum TKJ — Web 3 Style</footer>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div id="modal" class="modal">
+  <div class="modal-box">
+    <h3>Form Pengembalian</h3>
+    <label>Kondisi Barang</label><select id="kondisi"><option>Baik</option><option>Cacat Ringan</option><option>Rusak</option></select>
+    <label>Tanggal Pengembalian</label><input id="returnDate" type="date">
+    <label>Foto Pengembalian</label><input id="returnPhoto" type="file" accept="image/*">
+    <div style="margin-top:10px;display:flex;justify-content:flex-end;gap:8px;">
+      <button id="cancelReturn" class="ghost">Batal</button><button id="saveReturn" class="primary">Simpan Pengembalian</button>
+    </div>
+  </div>
+</div>
+
+<div class="notif" id="notif">Tersimpan</div>
+
+<script>
+const LS='peminjaman_tkj_v35';let data=JSON.parse(localStorage.getItem(LS)||'[]');
+let isLoggedIn=false,isPreview=false,editingId=null;const loginPassword='kingroup';
+const dvdWrap=document.getElementById('dvdWrap'),dvdBox=document.getElementById('dvdBox'),starfield=document.getElementById('starfield');
+const stage=document.getElementById('stage'),app=document.getElementById('app'),tableBody=document.querySelector('#table tbody');
+const notifEl=document.getElementById('notif');const loginBtn=document.getElementById('loginBtn'),previewBtn=document.getElementById('previewBtn');
+const logoutBtn=document.getElementById('logoutBtn'),togglePreview=document.getElementById('togglePreview');
+const nameEl=document.getElementById('name'),kelasEl=document.getElementById('kelas'),itemEl=document.getElementById('item');
+const dateEl=document.getElementById('date'),photoEl=document.getElementById('photo');
+const saveBorrow=document.getElementById('saveBorrow'),clearAll=document.getElementById('clearAll'),nowBtn=document.getElementById('nowBtn');
+const modal=document.getElementById('modal'),cancelReturn=document.getElementById('cancelReturn'),saveReturn=document.getElementById('saveReturn');
+const kondisiEl=document.getElementById('kondisi'),returnDateEl=document.getElementById('returnDate'),returnPhotoEl=document.getElementById('returnPhoto');
+const exportCSV=document.getElementById('exportCSV');
+
+function showNotif(t='Tersimpan',ms=1500){notifEl.textContent=t;notifEl.style.display='block';setTimeout(()=>notifEl.style.display='none',ms);}
+function saveLS(){localStorage.setItem(LS,JSON.stringify(data));}
+function fmtDate(d){if(!d)return'';const dt=new Date(d);if(isNaN(dt))return d;return dt.toLocaleDateString('id-ID');}
+async function readFileAsDataURL(f){return new Promise((r,j)=>{const fr=new FileReader();fr.onload=()=>r(fr.result);fr.onerror=()=>j(fr.error);fr.readAsDataURL(f);});}
+
+/* Aurora Stars */
+function spawnStars(n=20){starfield.innerHTML='';const w=window.innerWidth;for(let i=0;i<n;i++){const s=document.createElement('div');s.className='star';s.style.left=Math.random()*w+'px';s.style.animationDuration=2+Math.random()*3+'s';s.style.animationDelay=Math.random()*6+'s';starfield.appendChild(s);}}
+spawnStars();
+
+/* DVD Bounce */
+let pos={x:20,y:20},vel={x:2.8,y:2.1},box={w:140,h:68};
+function bounce(){const r=dvdWrap.getBoundingClientRect();pos.x+=vel.x;pos.y+=vel.y;
+if(pos.x+box.w>r.width||pos.x<0)vel.x*=-1;if(pos.y+box.h>r.height||pos.y<0)vel.y*=-1;
+dvdBox.style.left=pos.x+'px';dvdBox.style.top=pos.y+'px';requestAnimationFrame(bounce);}bounce();
+
+/* Click sound */
+let ctx;function clickSound(){try{if(!ctx)ctx=new(window.AudioContext||window.webkitAudioContext)();const o=ctx.createOscillator(),g=ctx.createGain();o.type='sine';o.frequency.value=900;g.gain.value=.12;o.connect(g);g.connect(ctx.destination);o.start();o.stop(ctx.currentTime+.1);}catch{}}
+document.addEventListener('click',e=>{if(e.target.tagName==='BUTTON')clickSound();});
+
+/* LOGIN / PREVIEW */
+loginBtn.onclick=()=>{const pw=prompt('Masukkan sandi:');if(pw===loginPassword){isLoggedIn=true;showApp();showNotif('Login Berhasil');}else alert('Sandi salah');};
+previewBtn.onclick=()=>{isPreview=true;showApp();showNotif('Mode Preview');};
+logoutBtn.onclick=()=>{isLoggedIn=false;isPreview=false;app.style.display='none';stage.style.display='grid';};
+togglePreview.onclick=()=>{if(isLoggedIn){isPreview=true;isLoggedIn=false;showNotif('Preview aktif');}else{const pw=prompt('Masukkan sandi:');if(pw===loginPassword){isLoggedIn=true;isPreview=false;showNotif('Login');}}render();};
+function showApp(){stage.style.display='none';app.style.display='block';render();}
+
+/* RENDER */
+function render(){tableBody.innerHTML='';data.forEach((r,i)=>{const tr=document.createElement('tr');
+tr.innerHTML=`<td>${i+1}</td><td>${r.nama}</td><td>${r.kelas}</td><td>${r.barang}</td><td>${fmtDate(r.tanggal)}</td>
+<td>${r.foto?`<img src="${r.foto}" class="thumb">`:''}</td>
+<td><span class="pill ${r.kembali?'returned':'borrowed'}">${r.kembali?'Kembali':'Dipinjam'}</span></td>`;
+if(!r.kembali&&!isPreview){tr.classList.add('clickable');tr.onclick=()=>{editingId=i;modal.style.display='flex';};}
+tableBody.appendChild(tr);});}
+
+/* SAVE BORROW */
+saveBorrow.onclick=async()=>{if(!photoEl.files[0])return alert('Foto wajib diisi');const f=await readFileAsDataURL(photoEl.files[0]);
+const d={nama:nameEl.value.trim(),kelas:kelasEl.value.trim(),barang:itemEl.value.trim(),tanggal:dateEl.value||new Date().toISOString().split('T')[0],foto:f,kembali:null};
+if(!d.nama||!d.kelas||!d.barang)return alert('Lengkapi data');data.push(d);saveLS();render();showNotif('Data disimpan');document.getElementById('borrowForm').reset();}
+nowBtn.onclick=()=>{dateEl.value=new Date().toISOString().split('T')[0];}
+
+/* CLEAR */
+clearAll.onclick=()=>{if(confirm('Hapus semua data?')){data=[];saveLS();render();}}
+
+/* RETURN MODAL */
+cancelReturn.onclick=()=>modal.style.display='none';
+saveReturn.onclick=async()=>{if(editingId===null)return;let foto=null;if(returnPhotoEl.files[0])foto=await readFileAsDataURL(returnPhotoEl.files[0]);
+data[editingId].kembali={kondisi:kondisiEl.value,tanggal:returnDateEl.value||new Date().toISOString().split('T')[0],foto};saveLS();render();modal.style.display='none';showNotif('Pengembalian tersimpan');}
+
+/* EXPORT CSV */
+exportCSV.onclick=()=>{const header='Nama,Kelas,Barang,Tanggal,Foto,Status\n';const csv=header+data.map(r=>[r.nama,r.kelas,r.barang,fmtDate(r.tanggal),r.kembali?'Sudah Kembali':'Dipinjam'].join(',')).join('\n');const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='peminjaman_tkj.csv';a.click();}
+</script>
+</body>
+</html>
+
